@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pull-nebula-images
+  namespace: kube-system
+  labels:
+    k8s-app: pull-nebula-images
+spec:
+  selector:
+    matchLabels:
+      name: pull-nebula-images
+  template:
+    metadata:
+      labels:
+        name: pull-nebula-images
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: pull-nebula
+        image: knightxun/nebula-image-tools:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 50Mi
+            cpu: 50m
+        volumeMounts:
+        - name: socket
+          mountPath: /var/run/docker.sock
+          type: Socket
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: socket
+        hostPath:
+          path: /var/run/docker.sock
